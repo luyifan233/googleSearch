@@ -8,7 +8,7 @@ api_key = "AIzaSyA1Y5Ou7k1mZ8QVtMf9N_PsqGhPtXmDnKc"
 def google_search(keyword):
     url = f"https://www.googleapis.com/customsearch/v1?q={keyword}&key={api_key}&cx={cx}"
     try:
-        time.sleep(2)
+        time.sleep(1)
         response = requests.get(url)
         data = response.json()
         if 'searchInformation' in data and 'totalResults' in data['searchInformation']:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 
     keywords = titles
     # 创建线程池
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         # 处理 titles
         keywords = titles
         # 使用 executor.map 函数来并行执行搜索任务
@@ -75,7 +75,7 @@ if __name__ == "__main__":
             file.write(f'{str(count[0])},{str(count[1])}\n')
 
     keywords = usernames
-    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
         username_results = list(executor.map(search, keywords))
 
 
