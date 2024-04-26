@@ -8,7 +8,7 @@ api_key = "AIzaSyA1Y5Ou7k1mZ8QVtMf9N_PsqGhPtXmDnKc"
 def google_search(keyword):
     url = f"https://www.googleapis.com/customsearch/v1?q={keyword}&key={api_key}&cx={cx}"
     try:
-        time.sleep(1)
+        time.sleep(2)
         response = requests.get(url)
         data = response.json()
         if 'searchInformation' in data and 'totalResults' in data['searchInformation']:
