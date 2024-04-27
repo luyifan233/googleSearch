@@ -8,61 +8,47 @@ api_key = "AIzaSyA1Y5Ou7k1mZ8QVtMf9N_PsqGhPtXmDnKc"
 def google_search(keyword):
     url = f"https://www.googleapis.com/customsearch/v1?q={keyword}&key={api_key}&cx={cx}"
     try:
-        time.sleep(2)
+        time.sleep(1.1)
         response = requests.get(url)
         if response.status_code == 200:
             data = response.json()
             if 'searchInformation' in data and 'totalResults' in data['searchInformation']:
                 return int(data['searchInformation']['totalResults'])
             else:
-                return -1  # 无法获取搜索结果数量
+                return -1
         else:
-            # 添加详细的错误信息
-            if response.status_code == 429:
-                print("请求过多：已达到 API 速率限制。稍后再试。")
-            elif response.status_code == 403:
-                print("禁止访问：可能是 API 密钥问题或服务禁用。")
-            elif response.status_code == 401:
-                print("未授权：检查 API 密钥是否正确。")
-            elif response.status_code == 400:
-                print("错误的请求：检查请求参数。")
-            else:
-                print(f"HTTP 错误 {response.status_code}: {response.text}")
+            handle_errors(response)
             return -1
     except Exception as e:
         print(f"发生异常：{e}")
         return -1
 
-def save_to_txt(data, filename):
-    with open(filename, 'w', encoding='utf-8') as f:
-        for item in data:
-            f.write(f"{item[0]},{item[1]}\n")
+def handle_errors(response):
+    if response.status_code == 429:
+        print("请求过多：已达到 API 速率限制。稍后再试。")
+    elif response.status_code == 403:
+        print("禁止访问：可能是 API 密钥问题或服务禁用。")
+    elif response.status_code == 401:
+        print("未授权：检查 API 密钥是否正确。")
+    elif response.status_code == 400:
+        print("错误的请求：检查请求参数。")
+    else:
+        print(f"HTTP 错误 {response.status_code}: {response.text}")
 
-def read_from_txt(filename):
-    data = []
-    with open(filename, 'r', encoding='utf-8') as f:
-        for line in f:
-            items = line.strip().split(',')
-            data.append((int(items[0]), items[1]))
-    return data
-
-def search(keyword):
-    print(f"Searching for keyword '{keyword[1]}'")
+def search_and_save(keyword, output_file):
     result_count = google_search(keyword[1])
     print(f"关键词 '{keyword[1]}' 的精确查询结果数量为: {result_count}")
-    return (keyword[0], result_count)
+    with open(output_file, 'a') as file:
+        file.write(f'{str(keyword[0])},{str(result_count)}\n')
+
+def read_from_txt(filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        return [(int(line.strip().split(',')[0]), line.strip().split(',')[1]) for line in f]
 
 if __name__ == "__main__":
     titles = read_from_txt('titles.txt')
     usernames = read_from_txt('usernames.txt')
 
-    print("Titles from file:", titles)
-    print("Usernames from file:", usernames)
-
-    # 处理标题和用户名
     for keywords, output_file in [(titles, 'title_result_counts.txt'), (usernames, 'username_result_counts.txt')]:
         with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
-            results = list(executor.map(search, keywords))
-        with open(output_file, 'a') as file:
-            for count in results:
-                file.write(f'{str(count[0])},{str(count[1])}\n')
+            executor.map(lambda keyword: search_and_save(keyword, output_file), keywords)
