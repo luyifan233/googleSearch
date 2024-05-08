@@ -11,6 +11,7 @@
             margin: 0;
             padding: 0;
             display: flex;
+            width: 100%; /* 设置页面宽度为屏幕宽度 */
         }
         nav {
             background-color: #333;
@@ -19,20 +20,19 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 20%; /* 设置导航栏宽度为屏幕宽度的20% */
+            width: 50%;
             height: 100vh; /* 设置导航栏高度为屏幕高度 */
             overflow: auto; /* 如果导航栏内容超出容器高度，显示滚动条 */
         }
         nav a {
             color: #fff;
             text-decoration: none;
-            padding: 5px 10px;
+            padding: 20px 10px;
             border-radius: 5px;
             margin-bottom: 5px;
         }
         .container {
             margin: 20px;
-            /*width: 80%; !* 设置内容容器宽度为屏幕宽度的90% *!*/
             flex-grow: 1; /* 让内容容器在剩余空间中自动扩展 */
             overflow: auto; /* 如果内容超出容器高度，显示滚动条 */
         }
@@ -68,7 +68,6 @@
          /* 添加样式到这里 */
         table {
             border-collapse: collapse; /* 合并表格边框 */
-            width: 80%; /* 设置表格宽度 */
         }
 
         th, td {
@@ -89,16 +88,18 @@
 </head>
 <body>
     <nav>
-        <a href="#" id="groups-tab" @click="showTab('groups')">群组</a>
-        <a href="#" id="users-tab" @click="showTab('users')">用户</a>
-        <a href="#" id="account-query-tab" @click="showTab('account-query')">账号关联查询</a>
-        <a href="#" id="session-query-tab" @click="showTab('session-query')">会话关联查询</a>
-        <a href="#" id="friend-query-tab" @click="showTab('friend-query')">好友关系查询</a>
-        <a href="#" id="transaction-query-tab" @click="showTab('transaction-query')">交易关系查询</a>
+        <a href="#" id="groups-tab" @click.prevent="showTab('groups')">群组</a>
+        <a href="#" id="users-tab" @click.prevent="showTab('users')">用户</a>
+        <a href="#" id="account-query-tab" @click.prevent="showTab('account-query')">账号关联查询</a>
+        <a href="#" id="session-query-tab" @click.prevent="showTab('session-query')">会话关联查询</a>
+        <a href="#" id="friend-query-tab" @click.prevent="showTab('friend-query')">好友关系查询</a>
+        <a href="#" id="transaction-query-tab" @click.prevent="showTab('transaction-query')">交易关系查询</a>
     </nav>
+
 
     <div id="app">
         <div class="container">
+            <!-- groups -->
             <div id="groups" style="display: block;">
                 <h2>群组列表</h2>
                 <!-- 添加移动条的容器 -->
@@ -134,7 +135,32 @@
                 <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
                 <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
             </div>
-            <!-- 其他标签和内容 -->
+            
+            <!-- users -->
+            <div id="users" style="display: none;">
+                <h2>用户列表</h2>
+            </div>
+
+            <!-- account-query -->
+            <div id="account-query" style="display: none;">
+                <h2>账号关联查询</h2>
+            </div>
+
+            <!-- session-query -->
+            <div id="session-query" style="display: none;">
+                <h2>会话关联查询</h2>
+            </div>
+
+            <!-- friend-query -->
+            <div id="friend-query" style="display: none;">
+                <h2>好友关系查询</h2>
+            </div>
+
+            <!-- transaction-query -->
+            <div id="transaction-query" style="display: none;">
+                <h2>交易关系查询</h2>
+            </div>
+                
         </div>
     </div>
 
@@ -178,6 +204,15 @@
                     if (this.currentPage < this.totalPages) {
                         this.currentPage++;
                     }
+                },
+                showTab(tabName) {
+                    console.log(tabName);
+                    // 隐藏所有标签页
+                    document.querySelectorAll('.container > div').forEach(tab => {
+                        tab.style.display = 'none';
+                    });
+                    // 显示指定标签页
+                    document.getElementById(tabName).style.display = 'block';
                 }
             },
             mounted() {
