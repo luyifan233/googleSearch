@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relationship Explorer</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        nav {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 20%; /* 设置导航栏宽度为屏幕宽度的20% */
+            height: 100vh; /* 设置导航栏高度为屏幕高度 */
+            overflow: auto; /* 如果导航栏内容超出容器高度，显示滚动条 */
+        }
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .container {
+            margin: 20px;
+            /*width: 80%; !* 设置内容容器宽度为屏幕宽度的90% *!*/
+            flex-grow: 1; /* 让内容容器在剩余空间中自动扩展 */
+            overflow: auto; /* 如果内容超出容器高度，显示滚动条 */
+        }
+        .group-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .group-list li {
+            margin-bottom: 5px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #555;
+        }
+
+         /* 添加样式到这里 */
+        table {
+            border-collapse: collapse; /* 合并表格边框 */
+            width: 80%; /* 设置表格宽度 */
+        }
+
+        th, td {
+            border: 1px solid #dddddd; /* 设置单元格边框 */
+            text-align: left; /* 文本左对齐 */
+            padding: 8px; /* 单元格内边距 */
+        }
+
+        th {
+            background-color: #f2f2f2; /* 设置表头背景色 */
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9; /* 设置偶数行背景色 */
+        }
+
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="#" id="groups-tab" @click="showTab('groups')">群组</a>
+        <a href="#" id="users-tab" @click="showTab('users')">用户</a>
+        <a href="#" id="account-query-tab" @click="showTab('account-query')">账号关联查询</a>
+        <a href="#" id="session-query-tab" @click="showTab('session-query')">会话关联查询</a>
+        <a href="#" id="friend-query-tab" @click="showTab('friend-query')">好友关系查询</a>
+        <a href="#" id="transaction-query-tab" @click="showTab('transaction-query')">交易关系查询</a>
+    </nav>
+
+    <div id="app">
+        <div class="container">
+            <div id="groups" style="display: block;">
+                <h2>群组列表</h2>
+                <!-- 添加移动条的容器 -->
+                <div class="table-container" style="overflow-x: auto; width: 100%;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>群组 ID</th>
+                            <th>标题</th>
+                            <th>username</th>
+                            <th>群组成员数量</th>
+                            <th>更新时间</th>
+                            <th>简介</th>
+                            <!-- 其他表头信息 -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="group in paginatedGroups" :key="group.channel_id">
+                            <td>{{ group.channel_id }}</td>
+                            <td>{{ group.title }}</td>
+                            <td>{{ group.username }}</td>
+                            <td>{{ group.participants_count }}</td>
+                            <td>{{ group.update_time }}</td>
+                            <td>{{ group.entity_info }}</td>
+                            <!-- 其他表格内容 -->
+                        </tr>
+                    </tbody>
+                </table>
+                </div>
+                <!-- 添加移动条 -->
+                <div class="scrollbar"></div>
+                <button @click="prevPage" :disabled="currentPage === 1">上一页</button>
+                <span>第 {{ currentPage }} 页，共 {{ totalPages }} 页</span>
+                <button @click="nextPage" :disabled="currentPage === totalPages">下一页</button>
+            </div>
+            <!-- 其他标签和内容 -->
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                groups: [], // 存储所有群组数据的数组
+                itemsPerPage: 20, // 每页显示的条目数
+                currentPage: 1 // 当前页码
+            },
+            computed: {
+                // 计算属性，根据当前页码和每页显示的条目数，返回当前页需要显示的群组数据
+                paginatedGroups() {
+                    const startIndex = (this.currentPage - 1) * this.itemsPerPage;
+                    const endIndex = startIndex + this.itemsPerPage;
+                    return this.groups.slice(startIndex, endIndex);
+                },
+                // 计算属性，根据每页显示的条目数和总群组数，计算总页数
+                totalPages() {
+                    return Math.ceil(this.groups.length / this.itemsPerPage);
+                }
+            },
+            methods: {
+                fetchGroups() {
+                    // 使用fetch从后端获取数据 223.3.88.244
+                    fetch('http://127.0.0.1:5000/fetch_groups') // 假设Flask的路由是'/fetch_groups'
+                    .then(response => response.json())
+                    .then(data => {
+                        this.groups = data; // 更新群组数据数组
+                    })
+                    .catch(error => console.error('Error fetching groups:', error));
+                },
+                prevPage() {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                    }
+                },
+                nextPage() {
+                    if (this.currentPage < this.totalPages) {
+                        this.currentPage++;
+                    }
+                }
+            },
+            mounted() {
+                this.fetchGroups(); // 获取群组数据
+            }
+        });
+    </script>
+</body>
+</html>
